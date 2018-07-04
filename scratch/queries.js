@@ -1,90 +1,97 @@
 'use strict';
-
 const mongoose = require('mongoose');
 const { MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
 
 mongoose.connect(MONGODB_URI)
-  .then(() => {
+	.then(() => {
+		console.log('Find/Search for notes: ');
 
-    /**
-     * Find/Search for notes using Note.find
-     */
-    const searchTerm = 'gaga';
-    let filter = {};
+		const searchTerm = 'Lady Gaga';
+		let filter = {};
+		let re = {}
 
-    if (searchTerm) {
-      // Using the `$regex` operator (case-sensitive by default)
-      filter.title = { $regex: searchTerm };
+		if (searchTerm) {
+			re = { $regex: searchTerm };
+			filter.$or = [{ title: re }, { content: re }];
+		};
 
-      // Using the `$regex` operator with case-insensitive `i` option
-      // filter.title = { $regex: searchTerm, $options: 'i' };
+		return Note.find({ $or: filter.$or }).sort({ updatedAt: 'desc' });
+	})
+	.then(result => {
+		if (result) {
+			console.log(result);
+		} else {
+			console.log('Not Found');
+		}
+		console.log('\n\n');
+	})
+	.then(() => {
+		console.log('Find note by id: ');
+		return Note.findById('000000000000000000000003');
+	})
+	.then(result => {
+		if (result) {
+			console.log(result);
+		} else {
+			console.log('Not Found');
+		}
+		console.log('\n\n');
+	})
+	.then(() => {
+		console.log('Create a new note: ');
 
-      // Alternative using regex `/pattern/i` but not recommended
-      // filter.title = /ways/i;
-    }
+		const newNote = {
+			title: 'this is a new note',
+			content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+		};
 
-    return Note.find(filter).sort({ updatedAt: 'desc' })
-      .then(results => {
-        console.log(results);
-      });
+		return Note.create(newNote);
+	})
+	.then(result => {
+		if (result) {
+			console.log(result);
+		} else {
+			console.log('Not Found');
+		}
+		console.log('\n\n');
+	})
+	.then(() => {
+		console.log('Update a note by id: ');
 
-    /**
-     * Find note by id using Note.findById
-     */
-    // return Note.findById('000000000000000000000003')
-    //   .then(result => {
-    //     if (result) {
-    //       console.log(result);
-    //     } else {
-    //       console.log('not found');
-    //     }
-    //   });
+		const updateNote = {
+			title: 'updated title',
+			content: 'Posuere sollicitudin aliquam ultrices sagittis orci a. Feugiat sed adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+		};
 
-    /**
-     * Create a new note using Note.create
-     */
-    // const newNote = {
-    //   title: 'this is a new note',
-    //   content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-    // };
-    //
-    // return Note.create(newNote)
-    //   .then(result => {
-    //     console.log(result);
-    //   });
+		return Note.findByIdAndUpdate('000000000000000000000007', updateNote, { new: true });
+	})
+	.then(result => {
+		if (result) {
+			console.log(result);
+		} else {
+			console.log('Not Found');
+		}
+		console.log('\n\n');
+	})
+	.then(() => {
+		console.log('Delete a note by id: ');
 
-    /**
-     * Update a note by id using Note.findByIdAndUpdate
-     */
-    // const updateNote = {
-    //   title: 'updated title',
-    //   content: 'Posuere sollicitudin aliquam ultrices sagittis orci a. Feugiat sed lectus vestibulum mattis ullamcorper velit. Odio pellentesque diam volutpat commodo sed egestas egestas fringilla. Velit egestas dui id ornare arcu odio. Molestie at elementum eu facilisis sed odio morbi. Tempor nec feugiat nisl pretium. At tempor commodo ullamcorper a lacus. Egestas dui id ornare arcu odio. Id cursus metus aliquam eleifend. Vitae sapien pellentesque habitant morbi tristique. Dis parturient montes nascetur ridiculus. Egestas egestas fringilla phasellus faucibus scelerisque eleifend. Aliquam faucibus purus in massa tempor nec feugiat nisl.'
-    // };
-
-    // return Note.findByIdAndUpdate('000000000000000000000003', updateNote, { new: true })
-    //   .then(result => {
-    //     if (result) {
-    //       console.log(result);
-    //     } else {
-    //       console.log('not found');
-    //     }
-    //   });
-
-    /**
-     * Delete a note by id using Note.findByIdAndRemove
-     */
-    // return Note.findByIdAndRemove('000000000000000000000004')
-    //   .then(result => {
-    //     console.log('deleted', result);
-    //   });
-
-  })
-  .then(() => {
-    return mongoose.disconnect();
-  })
-  .catch(err => {
-    console.error(`ERROR: ${err.message}`);
-    console.error(err);
-  });
+		return Note.findByIdAndRemove('000000000000000000000004');
+	})
+	.then(result => {
+		if (result) {
+			console.log(result);
+		} else {
+			console.log('Not Found');
+		}
+		console.log('\n\n');
+	})
+	.then(() => {
+		return mongoose.disconnect();
+	})
+	.catch(err => {
+		console.error(`ERROR: ${err.message}`);
+		console.error(err);
+	});
