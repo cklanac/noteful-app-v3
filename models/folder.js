@@ -10,7 +10,7 @@ const schema = new mongoose.Schema({
 schema.set('timestamps', true);
 
 // Transform output during `res.json(data)`, `console.log(data)` etc.
-schema.set('toObject', {
+schema.set('toJSON', {
   virtuals: true,     // include built-in virtual `id`
   transform: (doc, result) => {
     delete result._id;
